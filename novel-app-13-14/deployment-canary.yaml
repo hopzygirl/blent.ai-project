@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: novel-app-canary
+  labels:
+    app: novel-app-canary
+    version: canary
+spec:
+  replicas: 1  # Moins de rÃ©pliques pour le canary
+  selector:
+    matchLabels:
+      app: novel-app-canary
+      version: canary
+  template:
+    metadata:
+      labels:
+        app: novel-app-canary
+        version: canary
+    spec:
+      containers:
+      - name: backend
+        image: blentai/hands-on-k8s-canary:1.4  # Version supÃ©rieure
+        ports:
+        - containerPort: 3000
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "0.25"
+          limits:
+            memory: "512Mi"
+            cpu: "0.5"
