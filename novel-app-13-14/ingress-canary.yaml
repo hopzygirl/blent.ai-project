@@ -1,0 +1,21 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: novel-app-canary-ingress
+  annotations:
+    kubernetes.io/spec.ingressClassName: nginx
+    nginx.ingress.kubernetes.io/canary: "true"
+    nginx.ingress.kubernetes.io/canary-weight: "5"  # 5% du trafic
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  rules:
+  - host: exemple.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: novel-app-canary-service
+            port:
+              number: 80
