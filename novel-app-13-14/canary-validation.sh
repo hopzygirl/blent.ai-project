@@ -14,7 +14,7 @@ canary_errors=0
 main_requests=0
 canary_requests=0
 
-echo "DÃ©marrage des tests Canary pour $DURATION secondes..."
+echo "Démarrage des tests Canary pour $DURATION secondes..."
 echo "URL: $URL"
 echo "Seuil d'erreur: $THRESHOLD%"
 
@@ -35,10 +35,8 @@ while [ $(date +%s) -lt $end_time ]; do
     
     total_requests=$((total_requests + 1))
     
-    # DÃ©terminer si c'est une erreur (codes 4xx et 5xx)
+    # Déterminer si c'est une erreur (codes 4xx et 5xx)
     if [[ $http_code -ge 400 ]]; then
-        # Pour simplifier, nous assumons une distribution 95/5
-        # En rÃ©alitÃ©, il faudrait identifier quelle version a rÃ©pondu
         if (( $total_requests % 20 == 0 )); then
             # ~5% vers canary
             canary_errors=$((canary_errors + 1))
@@ -56,7 +54,7 @@ while [ $(date +%s) -lt $end_time ]; do
         fi
     fi
     
-    # Afficher le progrÃ¨s
+    # Afficher le progrès
     if (( $total_requests % 10 == 0 )); then
         echo -n "."
     fi
@@ -65,7 +63,7 @@ while [ $(date +%s) -lt $end_time ]; do
 done
 
 echo ""
-echo "Tests terminÃ©s. Analyse des rÃ©sultats..."
+echo "Tests terminés. Analyse des résultats..."
 
 # Calculer les taux d'erreur
 if [ $main_requests -gt 0 ]; then
@@ -80,7 +78,7 @@ else
     canary_error_rate=0
 fi
 
-# Calculer la diffÃ©rence
+# Calculer la différence
 error_rate_diff=$(echo "scale=2; $canary_error_rate - $main_error_rate" | bc)
 
 echo "=== RÃ‰SULTATS ==="
@@ -95,7 +93,7 @@ echo "DiffÃ©rence: ${error_rate_diff}%"
 
 echo "=== DÃ‰CISION ==="
 
-# VÃ©rifier si bc retourne un nombre nÃ©gatif (canary meilleur)
+# Vérifier si bc retourne un nombre négatif (canary meilleur)
 if (( $(echo "$error_rate_diff < 0" | bc -l) )); then
     abs_diff=$(echo "$error_rate_diff * -1" | bc)
 else
@@ -103,10 +101,10 @@ else
 fi
 
 if (( $(echo "$abs_diff <= $THRESHOLD" | bc -l) )); then
-    echo "âœ… DiffÃ©rence de taux d'erreur acceptable (${error_rate_diff}% <= ${THRESHOLD}%)"
-    echo "ðŸ”„ Mise Ã  jour du dÃ©ploiement principal vers la version $CANARY_VERSION"
+    echo "Différence de taux d'erreur acceptable (${error_rate_diff}% <= ${THRESHOLD}%)"
+    echo "ðŸ”„ Mise à  jour du déploiement principal vers la version $CANARY_VERSION"
     
-    # Supprimer le dÃ©ploiement canary
+    # Supprimer le déploiement canary
     kubectl delete -f ingress-canary.yaml
     kubectl delete -f service-canary.yaml
     kubectl delete -f deployment-canary.yaml
@@ -119,15 +117,15 @@ if (( $(echo "$abs_diff <= $THRESHOLD" | bc -l) )); then
     
     echo "âœ… Mise Ã  jour terminÃ©e avec succÃ¨s"
 else
-    echo "âŒ DiffÃ©rence de taux d'erreur trop Ã©levÃ©e (${error_rate_diff}% > ${THRESHOLD}%)"
-    echo "ðŸ—‘ï¸ Suppression du dÃ©ploiement canary"
+    echo "âŒ DiffÃ©rence de taux d'erreur trop élevée (${error_rate_diff}% > ${THRESHOLD}%)"
+    echo "ðŸ—‘ï¸ Suppression du déploiement canary"
     
     # Supprimer seulement le dÃ©ploiement canary
     kubectl delete -f ingress-canary.yaml
     kubectl delete -f service-canary.yaml
     kubectl delete -f deployment-canary.yaml
     
-    echo "âœ… Rollback effectuÃ© - 100% du trafic redirigÃ© vers la version stable"
+    echo "âœ… Rollback effectué - 100% du trafic redirigé vers la version stable"
 fi
 ```
 
